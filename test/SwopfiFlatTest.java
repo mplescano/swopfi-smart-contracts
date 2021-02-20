@@ -262,7 +262,9 @@ public class SwopfiFlatTest {
 
         NodeError error = assertThrows(NodeError.class, () ->
                 firstCaller.invokes(i -> i.dApp(exchanger7).function("exchange", arg(amountSendEstimated), arg(minTokenReceiveAmount)).payment(amountBelowLimit, tokenB).fee(1_00500000L)));
-        assertTrue(error.getMessage().contains("Only swap of 10.000000 or more tokens is allowed"));
+
+        String expected = "Only swap of 10.000000 or more tokens is allowed";
+        assertTrue(error.getMessage().contains(expected), String.format("Actual error message: %s does not contain \"%s\"", error.getMessage(), expected));
     }
 
     Stream<Arguments> replenishOneTokenAProvider() {
@@ -445,7 +447,9 @@ public class SwopfiFlatTest {
         int slippageToleranceAboveLimit = 11;
         NodeError error = assertThrows(NodeError.class, () ->
                 secondCaller.invokes(i -> i.dApp(exchanger7).function("replenishWithTwoTokens", arg(slippageToleranceAboveLimit)).payment(100, tokenA).payment(100, tokenB).fee(1_00500000L)).getId().getBase58String());
-        assertTrue(error.getMessage().contains("slippage tolerance must be <= 1%"));
+
+        String expected = "Slippage tolerance must be <= 1%";
+        assertTrue(error.getMessage().contains(expected), String.format("Actual error message: %s does not contain \"%s\"", error.getMessage(), expected));
     }
 
     @ParameterizedTest(name = "secondCaller withdraw A/B by twice")
@@ -507,9 +511,10 @@ public class SwopfiFlatTest {
 
         NodeError error = assertThrows(NodeError.class, () ->
                 firstCaller.invokes(i -> i.dApp(exchanger7).function("exchange", arg(amountSendEstimated), arg(tokenSendAmountWithFee)).payment(tokenReceiveAmount, tokenA).fee(1_00500000L)));
-        assertTrue(error.getMessage().contains(String.format("Error while executing account-script:" +
+        String expected = String.format("Error while executing account-script:" +
                 " Insufficient DApp balance to pay %s tokenB due to staking. Available: 0 tokenB." +
-                " Please contact support in Telegram: https://t.me/swopfisupport", tokenSendAmountWithFee)));
+                " Please contact support in Telegram: https://t.me/swopfisupport", tokenSendAmountWithFee);
+        assertTrue(error.getMessage().contains(expected), String.format("Actual error message: %s does not contain \"%s\"", error.getMessage(), expected));
 
         node().waitForTransaction(stakingAcc.writes(d -> d.integer(String.format("rpd_balance_%s_%s", tokenB, exchanger7.address()), balanceB - tokenSendAmountWithFee - tokenSendGovernance - 1)).getId().getBase58String());
         node().waitForTransaction(firstCaller.invokes(i -> i.dApp(exchanger7).function("exchange", arg(amountSendEstimated), arg(tokenSendAmountWithFee)).payment(tokenReceiveAmount, tokenA).fee(1_00500000L)).getId().getBase58String());
@@ -519,32 +524,38 @@ public class SwopfiFlatTest {
     void k_canShutdown() {
         NodeError error = assertThrows(NodeError.class, () ->
                 firstCaller.invokes(i -> i.dApp(exchanger1).function("shutdown").fee(900000L)));
-        assertTrue(error.getMessage().contains("Only admin can call this function"));
+        String expected = "Only admin can call this function";
+        assertTrue(error.getMessage().contains(expected), String.format("Actual error message: %s does not contain \"%s\"", error.getMessage(), expected));
+
 
         secondCaller.invokes(i -> i.dApp(exchanger1).function("shutdown").fee(900000L));
         assertThat(exchanger1.dataBool("active")).isFalse();
         assertThat(exchanger1.dataStr("shutdown_cause")).isEqualTo("Paused by admin");
 
 
-        NodeError error1 = assertThrows(NodeError.class, () ->
+        NodeError error2 = assertThrows(NodeError.class, () ->
                 firstCaller.invokes(i -> i.dApp(exchanger1).function("shutdown").fee(900000L)));
-        assertTrue(error1.getMessage().contains("DApp is already suspended. Cause: Paused by admin"));
+        String expected2 = "DApp is already suspended. Cause: Paused by admin";
+        assertTrue(error2.getMessage().contains(expected2), String.format("Actual error message: %s does not contain \"%s\"", error2.getMessage(), expected2));
     }
 
     @Test
     void l_canActivate() {
         NodeError error = assertThrows(NodeError.class, () ->
                 firstCaller.invokes(i -> i.dApp(exchanger1).function("activate").fee(900000L)));
-        assertTrue(error.getMessage().contains("Only admin can call this function"));
+        String expected = "Only admin can call this function";
+        assertTrue(error.getMessage().contains(expected), String.format("Actual error message: %s does not contain \"%s\"", error.getMessage(), expected));
 
         secondCaller.invokes(i -> i.dApp(exchanger1).function("activate").fee(900000L));
-        assertThat(exchanger1.dataBool("active")).isTrue();
-        NodeError error1 = assertThrows(NodeError.class, () -> exchanger1.dataStr("shutdown_cause"));
-        assertTrue(error1.getMessage().contains("no data for this key"));
+        assertTrue(exchanger1.dataBool("active"), "dApp is not active after activation");
+        NodeError error2 = assertThrows(NodeError.class, () -> exchanger1.dataStr("shutdown_cause"));
+        String expected2 = "no data for this key";
+        assertTrue(error2.getMessage().contains(expected2), String.format("Actual error message: %s does not contain \"%s\"", error2.getMessage(), expected2));
 
-        NodeError error2 = assertThrows(NodeError.class, () ->
+        NodeError error3 = assertThrows(NodeError.class, () ->
                 firstCaller.invokes(i -> i.dApp(exchanger1).function("activate").fee(900000L)));
-        assertTrue(error2.getMessage().contains("DApp is already active"));
+        String expected3 = "DApp is already active";
+        assertTrue(error3.getMessage().contains(expected3), String.format("Actual error message: %s does not contain \"%s\"", error3.getMessage(), expected3));
     }
 
     private double skeweness(long x, long y) {
