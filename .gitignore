@@ -14,3 +14,6 @@ buildNumber.properties
 *.iws
 
 local.conf
+/.project
+/.settings/
+/.classpath

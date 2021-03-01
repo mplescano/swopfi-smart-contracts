@@ -2,6 +2,9 @@ import com.wavesplatform.wavesj.Base58;
 import com.wavesplatform.wavesj.transactions.InvokeScriptTransaction;
 import im.mak.paddle.Account;
 import im.mak.paddle.exceptions.NodeError;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -28,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SwopfiFlatTest {
+	private static Log logger = LogFactory.getLog(SwopfiFlatTest.class);
     private Account exchanger1, exchanger2, exchanger3, exchanger4, exchanger5, exchanger6, exchanger7;
     private int aDecimal = 6;
     private int bDecimal = 6;
@@ -57,36 +61,74 @@ public class SwopfiFlatTest {
             .replace("EtVkT6ed8GtbUiVVEqdmEqsp2J4qbb3rre2HFgxeVYdg", Base58.encode(secondCaller.publicKey()))
             .replace("Czn4yoAuUZCVCLJDRfskn8URfkwpknwBTZDbs1wFrY7h", Base58.encode(secondCaller.publicKey()));
 
+    {
+    	logger.info("governanceAddress:" + governanceAddress);
+    	logger.info("firstCaller seedText:" + firstCaller.seed());
+    	logger.info("firstCaller address:" + firstCaller.address());
+    	logger.info("firstCaller publicKey:" + Base58.encode(firstCaller.publicKey()));
+    	
+    	logger.info("secondCaller seedText:" + secondCaller.seed());
+    	logger.info("secondCaller address:" + secondCaller.address());
+    	logger.info("secondCaller publicKey:" + Base58.encode(secondCaller.publicKey()));
+    	
+    	logger.info("stakingAcc seedText:" + stakingAcc.seed());
+    	logger.info("stakingAcc address:" + stakingAcc.address());
+    	logger.info("stakingAcc publicKey:" + Base58.encode(stakingAcc.publicKey()));
+    	
+    	logger.info("tokenA Base58:" + tokenA);
+    	logger.info("tokenB Base58:" + tokenB);
+    }
 
     @BeforeAll
     void before() {
         async(
                 () -> {
                     exchanger1 = new Account(100_00000000L);
+                	logger.info("exchanger1 seedText:" + exchanger1.seed());
+                	logger.info("exchanger1 address:" + exchanger1.address());
+                	logger.info("exchanger1 publicKey:" + Base58.encode(exchanger1.publicKey()));
                     exchanger1.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
                     exchanger2 = new Account(100_00000000L);
+                	logger.info("exchanger2 seedText:" + exchanger2.seed());
+                	logger.info("exchanger2 address:" + exchanger2.address());
+                	logger.info("exchanger2 publicKey:" + Base58.encode(exchanger2.publicKey()));
                     exchanger2.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
                     exchanger3 = new Account(100_00000000L);
+                	logger.info("exchanger3 seedText:" + exchanger3.seed());
+                	logger.info("exchanger3 address:" + exchanger3.address());
+                	logger.info("exchanger3 publicKey:" + Base58.encode(exchanger3.publicKey()));
                     exchanger3.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
                     exchanger4 = new Account(100_00000000L);
+                	logger.info("exchanger4 seedText:" + exchanger4.seed());
+                	logger.info("exchanger4 address:" + exchanger4.address());
+                	logger.info("exchanger4 publicKey:" + Base58.encode(exchanger4.publicKey()));
                     exchanger4.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
                     exchanger5 = new Account(100_00000000L);
+                	logger.info("exchanger5 seedText:" + exchanger5.seed());
+                	logger.info("exchanger5 address:" + exchanger5.address());
+                	logger.info("exchanger5 publicKey:" + Base58.encode(exchanger5.publicKey()));
                     exchanger5.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
                     exchanger6 = new Account(100_00000000L);
+                	logger.info("exchanger6 seedText:" + exchanger6.seed());
+                	logger.info("exchanger6 address:" + exchanger6.address());
+                	logger.info("exchanger6 publicKey:" + Base58.encode(exchanger6.publicKey()));
                     exchanger6.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
                     exchanger7 = new Account(100_00000000L);
+                	logger.info("exchanger7 seedText:" + exchanger7.seed());
+                	logger.info("exchanger7 address:" + exchanger7.address());
+                	logger.info("exchanger7 publicKey:" + Base58.encode(exchanger7.publicKey()));
                     exchanger7.setsScript(s -> s.script(dAppScript));
                 },
                 () -> {
@@ -353,9 +395,9 @@ public class SwopfiFlatTest {
         long contractBalanceAfterVirtualSwapTokenB = dAppTokensAmountB + virtualSwapTokenPay;
 
         double ratioShareTokensInA = BigDecimal.valueOf(amountVirtualReplanishTokenA).multiply(BigDecimal.valueOf(scaleValue8)).divide(BigDecimal.valueOf(contractBalanceAfterVirtualSwapTokenA), 8, RoundingMode.HALF_DOWN).longValue();
-        System.out.println("ratioShareTokensInA" + ratioShareTokensInA);
+        logger.info("ratioShareTokensInA" + ratioShareTokensInA);
         double ratioShareTokensInB = BigDecimal.valueOf(amountVirtualReplanishTokenB - stakingFee).multiply(BigDecimal.valueOf(scaleValue8)).divide(BigDecimal.valueOf(contractBalanceAfterVirtualSwapTokenB), 8, RoundingMode.HALF_DOWN).longValue();
-        System.out.println("ratioShareTokensInB" + ratioShareTokensInB);
+        logger.info("ratioShareTokensInB" + ratioShareTokensInB);
 
         long shareTokenToPayAmount;
         if (ratioShareTokensInA <= ratioShareTokensInB) {
@@ -367,7 +409,7 @@ public class SwopfiFlatTest {
 
         }
 
-        System.out.println("shareTokenToPayAmount: " + shareTokenToPayAmount);
+        logger.info("shareTokenToPayAmount: " + shareTokenToPayAmount);
         long invariantCalculated = invariantCalc(dAppTokensAmountA, dAppTokensAmountB + pmtAmount).longValue();
 
         node().waitForTransaction(firstCaller.invokes(i -> i.dApp(exchanger).function("replenishWithOneToken", arg(virtualSwapTokenPay), arg(virtualSwapTokenGet)).payment(pmtAmount, tokenB).fee(1_00500000L)).getId().getBase58String());
